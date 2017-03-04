@@ -232,6 +232,7 @@ UPDATE creature_template SET unit_flags=unit_flags&~8388608 WHERE unit_flags&838
 UPDATE creature, creature_template SET creature.curhealth=creature_template.minhealth,creature.curmana=creature_template.minmana WHERE creature.id=creature_template.entry and creature_template.RegenHealth = '1';
 UPDATE creature_template SET dynamicflags = dynamicflags &~ 223;
 UPDATE creature_template SET npcflag = npcflag&~16777216; -- UNIT_NPC_FLAG_SPELLCLICK
+UPDATE creature_template SET modelid_2 = 0 WHERE modelid_1 = modelid_2;
 UPDATE creature_template c1, creature_template c2 SET c2.unit_class=c1.unit_class, c2.npcflag=c1.npcflag, c2.faction_A=c1.faction_A, c2.faction_H=c1.faction_H, c2.speed_walk=c1.speed_walk, c2.speed_run=c1.speed_run, c2.scale=c1.scale, c2.InhabitType=c1.InhabitType, c2.MovementType=c1.MovementType, c2.unit_flags=c1.unit_flags WHERE c2.entry=c1.difficulty_entry_1;
 UPDATE creature_template c1, creature_template c2 SET c2.unit_class=c1.unit_class, c2.npcflag=c1.npcflag, c2.faction_A=c1.faction_A, c2.faction_H=c1.faction_H, c2.speed_walk=c1.speed_walk, c2.speed_run=c1.speed_run, c2.scale=c1.scale, c2.InhabitType=c1.InhabitType, c2.MovementType=c1.MovementType, c2.unit_flags=c1.unit_flags WHERE c2.entry=c1.difficulty_entry_2;
 UPDATE creature_template c1, creature_template c2 SET c2.unit_class=c1.unit_class, c2.npcflag=c1.npcflag, c2.faction_A=c1.faction_A, c2.faction_H=c1.faction_H, c2.speed_walk=c1.speed_walk, c2.speed_run=c1.speed_run, c2.scale=c1.scale, c2.InhabitType=c1.InhabitType, c2.MovementType=c1.MovementType, c2.unit_flags=c1.unit_flags WHERE c2.entry=c1.difficulty_entry_3;
@@ -265,6 +266,23 @@ DELETE FROM game_event_creature WHERE guid NOT IN (SELECT guid FROM creature);
 DELETE FROM creature_questrelation WHERE id NOT IN (SELECT entry FROM creature_template);
 DELETE FROM creature_onkill_reputation WHERE creature_id NOT IN (SELECT entry FROM creature_template);
 UPDATE creature_template SET npcflag=npcflag|2 WHERE entry IN (SELECT id FROM creature_questrelation UNION SELECT id FROM creature_involvedrelation);
+
+-- 11919 and 11940 fix (by xfurry)
+DELETE FROM db_script_string WHERE entry IN (2000005623,2000005624,2000005625,2000005626);
+INSERT INTO db_script_string (entry,content_default,sound,type,language,emote,comment) VALUES
+(2000005623,'Easy now, drakeling.',0,0,0,0,'Raelorasz - say_drake_1'),
+(2000005624,'A wonderful specimen.',0,0,0,0,'Raelorasz - say_drake_2'),
+(2000005625,'Sleep now, young one....',0,0,0,0,'Raelorasz - say_drake_3'),
+(2000005626,'Yes, this one should advance my studies nicely....',0,0,0,0,'say_drake_4');
+DELETE FROM dbscripts_on_spell WHERE id IN (46702,46693);
+INSERT INTO dbscripts_on_spell (id, delay, command, datalong, data_flags, dataint, dataint2, dataint3, comments) VALUES
+(46702, 1, 15, 46704, 6, 0, 0, 0, 'cast Raelorasz Fireball'),
+(46702, 1, 0, 0, 2, 2000005623, 2000005624, 2000005625, 'say text'),
+(46702, 5, 0, 0, 2, 2000005626, 0, 0, 'say text'),
+(46693, 0, 14, 46691, 2, 0, 0, 0, 'remove Drake Hatchling Subdued aura');
+
+-- Quest 10309 (by tbayart)
+update creature_template set faction_A = 16, faction_H = 16 where entry = 20287;
 
 --UPDATE Database Version
 UPDATE db_version set version = 'TwoDatabase 1.0.1 for MaNGOSTwo XXXXX+ and ScriptDev2 XXXXX+';
